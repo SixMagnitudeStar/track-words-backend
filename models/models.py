@@ -1,8 +1,9 @@
-from sqlalchemy import Column, Integer, String, Boolean ,ForeignKey, JSON, Index
+from sqlalchemy import Column, Integer, String, Boolean ,ForeignKey, JSON, Index, DateTime
 from sqlalchemy.orm import relationship, declarative_base
 from sqlalchemy.sql import expression
 from pydantic import BaseModel
 from typing import List, Optional
+from datetime import datetime
 
 from database import Base
 
@@ -102,8 +103,12 @@ class MarkedWord(Base):
     user_id = Column(Integer, ForeignKey('users.id'))
 
     # 這個 mark的單字屬於哪篇文章
-    article_id = Column(Integer, ForeignKey('articles.id')) 
+    ## article_id = Column(Integer, ForeignKey('articles.id')) 
+    article_id = Column(Integer, ForeignKey('articles.id'), nullable=True)
     word = Column(String)                    # mark 的單字
+
+    marked_time = Column(DateTime, default=datetime.utcnow)
+
 
     article = relationship("Article", back_populates="marked_words")
 

@@ -93,6 +93,7 @@ from fastapi.encoders import jsonable_encoder
 
 #     return result
 
+## 文章查詢 (包含所有block、marked word)
 @router.get('/articles', response_model=List[ArticleRes])
 def get_articles(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     articles = db.query(Article)\
@@ -329,19 +330,52 @@ def add_article_blocks(
 
 
 
-@router.get('/markedwords/{article_id}')
+# @router.get('/markedwords/{article_id}')
+# def get_markwords(
+#     article_id: int,
+#     current_user: User = Depends(get_current_user),
+#     db: Session = Depends(get_db)
+# ):
+
+#     markedwords = db.query(
+#         MarkedWord).filter(MarkedWord.user_id == current_user.id, 
+#         MarkedWord.article_id == article_id
+#         ).all()
+
+#     return {'message': '標記單字查詢成功!', 'words': markedwords}    
+
+@router.get('/markedwords')
 def get_markwords(
-    article_id: int,
+    article_id: int | None = Query(None),
+    marked_from: datetime | None = Query(None),
+    marked_to: datetime | None = Query(None),
+    limit: int = Query(50, ge=1, le=500),
+    db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
 ):
+    # 1) 建立一個 query 物件（還沒執行）
+    q = db.query(MarkedWord).filter(MarkedWord.user_id == current_user.id)
 
-    markedwords = db.query(
-        MarkedWord).filter(MarkedWord.user_id == current_user.id, 
-        MarkedWord.article_id == article_id
-        ).all()
+    # 2) 根據有沒有傳參數，動態加上 filter（仍然沒執行）
+    if article_id is not None:
+        q = q.filter(MarkedWord.article_id == article_id)
 
-    return {'message': '標記單字查詢成功!', 'words': markedwords}    
+    if marked_from is not None:
+        q = q.filter(MarkedWord.marked_time >= marked_from)
+
+    if marked_to is not None:
+        q = q.filter(MarkedWord.marked_time <= marked_to)
+
+    # 排序、分頁等也可以在這裡加入
+    q = q.order_by(MarkedWord.marked_time.desc())
+
+    if limit is not None:
+        q = q.limit(limit)
+
+    # 3) 最後執行（在這一行 SQL 才會被送到 DB）
+    results = q.all()
+
+    return {"message": "標記單字查詢成功!", "words": results}
 
 
 @router.post('/markedword')
