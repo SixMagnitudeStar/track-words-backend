@@ -32,11 +32,6 @@ def findarticle(db: Session = Depends(get_db)):
     .order_by(desc(Article.id))\
     .all()
     
-    # if articles:
-    #     return {'文章': articles}
-    # else:
-    #     return {'回答': '找不到'}
-    #return articles
     return articles
 
 
@@ -45,54 +40,7 @@ def findarticle(db: Session = Depends(get_db)):
 
 from fastapi.encoders import jsonable_encoder
 
-# @router.get('/articles', response_model=List[ArticleRes])
-# def get_articles(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-#     articles = db.query(Article)\
-#         .filter(Article.user_id == current_user.id)\
-#         .options(
-#             joinedload(Article.blocks),
-#             joinedload(Article.marked_words)
-#         )\
-#         .order_by(desc(Article.id))\
-#         .all()
 
-#     result = []
-#     for article in articles:
-#         blocks = [
-#             ArticleBlockRes(
-#                 id=b.id,
-#                 text=b.text,
-#                 text_type=b.text_type,
-#                 marked=b.marked,
-#                 index=b.index,
-#                 style=b.style,
-#                 previous_index=b.previous_index,
-#                 next_index=b.next_index
-#             )
-#             for b in article.blocks
-#         ]
-
-#         marked_words = [
-#             MarkedWordRes(
-#                 id=mw.id,
-#                 article_id=mw.article_id,
-#                 word=mw.word
-#             )
-#             for mw in article.marked_words
-#         ]
-
-#         article_data = ArticleRes(
-#             id=article.id,
-#             title=article.title,
-#             note=article.note,
-#             content=article.content,
-#             blocks=blocks,
-#             marked_words=marked_words
-#         )
-
-#         result.append(article_data)
-
-#     return result
 
 ## 文章查詢 (包含所有block、marked word)
 @router.get('/articles', response_model=List[ArticleRes])
@@ -143,41 +91,6 @@ def get_articles(current_user: User = Depends(get_current_user), db: Session = D
         result.append(article_data)
 
     return result
-# @router.get('/articles', response_model=List[ArticleRes])
-# def get_articles(current_user:User = Depends(get_current_user), db: Session = Depends(get_db)):
-#     articles = db.query(Article)\
-#     .filter(Article.user_id == current_user.id)\
-#     .options(joinedload(Article.blocks))\
-#     .order_by(desc(Article.id))\
-#     .all()
-#     ##return {'message': '文章查詢成功', 'account': current_user.username, 'articles': articles}
-
-#     result = []
-#     for article in articles:
-#         # 查該文章的 marked_words
-#         words = [
-#             MarkedWordRes(
-#                 id=mw.id,
-#                 article_id=mw.article_id,
-#                 word=mw.word
-#             )
-#             for mw in db.query(MarkedWord).filter(MarkedWord.article_id == article.id).all()
-#         ]
-
-#         article_data = ArticleRes.from_orm(article).model_copy(update={"marked_words": words})
-
-#         result.append(article_data.dict())
-#     return result
-
-# @router.get('/articles')
-# def get_articles(current_user:User = Depends(get_current_user), db: Session = Depends(get_db)):
-#     articles = db.query(Article).filter(Article.user_id == current_user.id).order_by(desc(Article.id)).all()
-
-#     # 將 Article 物件 list 轉成 dict list
-#  ##   articles_list = [article_to_dict(a) for a in articles]
-
-#     return {'message': '文章查詢成功', 'account': current_user.username, 'articles': articles}
-
 
 
 def article_to_dict(article: Article):
