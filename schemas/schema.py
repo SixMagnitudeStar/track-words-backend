@@ -1,5 +1,9 @@
 from pydantic import BaseModel
-from typing import List, Dict, Optional
+from typing import List, Optional
+
+
+
+
 
 
 class RegisterRequest(BaseModel):
@@ -101,3 +105,29 @@ class MarkedUpdate(BaseModel):
 class UpdateArticleNoteReq(BaseModel):
     article_id : int
     note : str
+
+
+##################################
+
+## 詞彙列表創建與修改請求提交表單
+class VocabularyListCreate(BaseModel):
+    name: str  # 建立必填
+    description: Optional[str] = None
+
+class VocabularyListUpdate(BaseModel):
+    name: Optional[str] = None  # 注意 Optional 寫法
+    description: Optional[str] = None  # 拼寫 correction
+
+## 詞彙料表內的單字創建請求    
+class VocabularyListWordCreate(VocabularyListWordBase):
+    list_id: int
+    word = str
+
+## 回傳給前端的值，有驗證比較乾淨
+class VocabularyListWordOut(BaseModel):
+    id: int
+    list_id: int
+    word: str
+
+    class Config:
+        orm_mode = True

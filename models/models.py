@@ -139,3 +139,36 @@ class testmodel(Base):
 #     article_id = Column(Integer, ForeignKey('articles.id'))
 
 #     text = Column(String)
+
+
+
+# Option B (recommended): Two tables — list + words rows (1 : N)
+class VocabularyList(Base):
+    __tablename__ = 'vocabulary_lists'
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=True)
+    name = Column(String, nullable=False)
+    description = Column(String, nullable=True)
+
+    user = relationship("User", backref="vocabulary_lists")
+    words = relationship(
+        "VocabularyListWord",
+        back_populates="vocabulary_list",
+        cascade="all, delete-orphan",
+        passive_deletes=True,  # <- add this
+    )
+
+
+class VocabularyListWord(Base):
+    __tablename__ = 'vocabulary_list_words'
+
+    id = Column(Integer, primary_key=True, index=True)
+    list_id = Column(Integer, ForeignKey('vocabulary_lists.id', ondelete="CASCADE"), nullable=False)
+    word = Column(String, nullable=False)
+
+    vocabulary_list = relationship("VocabularyList", back_populates="words")
+
+Index("ix_vocabulary_list_words_list", VocabularyListWord.list_id)
+
+
