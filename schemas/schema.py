@@ -119,9 +119,9 @@ class VocabularyListUpdate(BaseModel):
     description: Optional[str] = None  # 拼寫 correction
 
 ## 詞彙料表內的單字創建請求    
-class VocabularyListWordCreate(VocabularyListWordBase):
+class VocabularyListWordCreate(BaseModel):
     list_id: int
-    word = str
+    word :str
 
 ## 回傳給前端的值，有驗證比較乾淨
 class VocabularyListWordOut(BaseModel):

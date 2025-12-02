@@ -103,46 +103,109 @@ def article_to_dict(article: Article):
     }
 
 
+# @router.post('/article')
+# def add_article(req: AddArticleWithBlocksRequest,current_user:User = Depends(get_current_user), db: Session = Depends(get_db)):
+#     if not current_user:
+#         return {"message": "請先登入"}
+
+#     new_article = Article(user_id = current_user.id,title=req.title, content = req.content, note=req.note)
+#     db.add(new_article)
+#     db.commit()
+#     db.refresh(new_article) ## 沒有要回傳值，其實可以不用refresh
+
+#     print('提交文章成功');
+
+#     for i in req.blocks:
+#         new_block = ArticleBlock(
+#             user_id = current_user.id,
+#             article_id = new_article.id,
+#             index = i.index,
+#             text = i.text,
+#             text_type = i.text_type,
+#             style = i.style,
+#             previous_index = i.previous_index,
+#             next_index = i.next_index
+#         )
+#         db.add(new_block)
+
+#     db.commit()  # 一次性提交所有 block
+
+#     print('提交block成功')
+
+#     return {
+#         'message': '文章新增成功!',
+#         'account': current_user.username,
+#         'article': {
+#             'id': new_article.id,
+#             'title': req.title,
+#             'content': req.content,
+#             'blocks_count': len(req.blocks)
+#         }
+#     }
+
+
 @router.post('/article')
-def add_article(req: AddArticleWithBlocksRequest,current_user:User = Depends(get_current_user), db: Session = Depends(get_db)):
+def add_article(req: AddArticleWithBlocksRequest, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     if not current_user:
         return {"message": "請先登入"}
 
-    new_article = Article(user_id = current_user.id,title=req.title, content = req.content, note=req.note)
+    # 建立文章
+    new_article = Article(
+        user_id=current_user.id,
+        title=req.title,
+        content=req.content,
+        note=req.note
+    )
     db.add(new_article)
     db.commit()
-    db.refresh(new_article) ## 沒有要回傳值，其實可以不用refresh
+    db.refresh(new_article)
 
-    print('提交文章成功');
+    print('提交文章成功')
 
+    # 建立所有 block 並收集實際寫入資料庫後的資料
+    blocks_list = []
     for i in req.blocks:
         new_block = ArticleBlock(
-            user_id = current_user.id,
-            article_id = new_article.id,
-            index = i.index,
-            text = i.text,
-            text_type = i.text_type,
-            style = i.style,
-            previous_index = i.previous_index,
-            next_index = i.next_index
+            user_id=current_user.id,
+            article_id=new_article.id,
+            index=i.index,
+            text=i.text,
+            text_type=i.text_type,
+            style=i.style,
+            previous_index=i.previous_index,
+            next_index=i.next_index
         )
         db.add(new_block)
+        db.flush()  # 先送到 DB，讓 new_block.id 生成
+        db.refresh(new_block)  # 更新 new_block，取得 id
 
-    db.commit()  # 一次性提交所有 block
+        # 收集 block 包含 DB 自動生成的 id
+        blocks_list.append({
+            "id": new_block.id,
+            "index": new_block.index,
+            "text": new_block.text,
+            "text_type": new_block.text_type,
+            "style": new_block.style,
+            "previous_index": new_block.previous_index,
+            "next_index": new_block.next_index
+        })
 
+    db.commit()
     print('提交block成功')
 
+    # 回傳文章包含 blocks
     return {
-        'message': '文章新增成功!',
-        'account': current_user.username,
-        'article': {
-            'id': new_article.id,
-            'title': req.title,
-            'content': req.content,
-            'blocks_count': len(req.blocks)
+        "message": "文章新增成功!",
+        "account": current_user.username,
+        "article": {
+            "id": new_article.id,
+            "title": req.title,
+            "content": req.content,
+            "note": req.note,
+            "blocks": blocks_list,
+            "marked_words": []
         }
     }
-
 
 
 @router.put('/article/{article_id}')

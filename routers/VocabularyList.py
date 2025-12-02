@@ -2,9 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from models.models import VocabularyList, User
-from schemas import VocabularyListCreate,  VocabularyListUpdate, VocabularyListWordCreate
+from schemas.schema import VocabularyListCreate,  VocabularyListUpdate, VocabularyListWordCreate
 from database import get_db
-from dependencies import get_current_user
+from security import get_current_user
 
 router = APIRouter(prefix="/vocabulary_lists", tags=["vocabulary_lists"])
 
