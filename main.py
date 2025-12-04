@@ -71,4 +71,5 @@ app.include_router(profile.router)
 app.include_router(chains.router)
 app.include_router(words.router)
 app.include_router(article.router)
+app.include_router(VocabularyList.router)
 

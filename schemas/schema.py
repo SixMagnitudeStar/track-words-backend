@@ -118,9 +118,19 @@ class VocabularyListUpdate(BaseModel):
     name: Optional[str] = None  # 注意 Optional 寫法
     description: Optional[str] = None  # 拼寫 correction
 
+class VocabularyListOut(BaseModel):
+    id: int
+    name: str
+    description: str | None
+    word_count: int
+
+    class Config:
+        orm_mode = True
+
+
 ## 詞彙料表內的單字創建請求    
 class VocabularyListWordCreate(BaseModel):
-    list_id: int
+    # list_id: int
     word :str
 
 ## 回傳給前端的值，有驗證比較乾淨
@@ -128,6 +138,16 @@ class VocabularyListWordOut(BaseModel):
     id: int
     list_id: int
     word: str
+
+    class Config:
+        orm_mode = True
+
+class VocabularyListOut(BaseModel):
+    id: int
+    name: str
+    description: str | None = None
+    word_count: int
+    words: List[VocabularyListWordOut] = []  # 新增這個欄位
 
     class Config:
         orm_mode = True

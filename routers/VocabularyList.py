@@ -1,12 +1,64 @@
+from typing import List 
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
-from models.models import VocabularyList, User
-from schemas.schema import VocabularyListCreate,  VocabularyListUpdate, VocabularyListWordCreate
+from models.models import VocabularyList, VocabularyListWord, User
+from schemas.schema import VocabularyListCreate,  VocabularyListUpdate, VocabularyListOut, VocabularyListWordOut, VocabularyListWordCreate
 from database import get_db
 from security import get_current_user
 
+
 router = APIRouter(prefix="/vocabulary_lists", tags=["vocabulary_lists"])
+
+@router.get("/", response_model=List[VocabularyListOut])
+def get_vocabulary_lists(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if not current_user:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="請先登入")
+
+    # 用 joinedload 一次抓出列表及其單字
+    lists = db.query(VocabularyList).options(joinedload(VocabularyList.words)) \
+               .filter(VocabularyList.user_id == current_user.id).all()
+
+    result = []
+    for l in lists:
+        result.append(
+            VocabularyListOut(
+                id=l.id,
+                name=l.name,
+                description=l.description,
+                word_count=len(l.words),
+                words=[VocabularyListWordOut(
+                    id=w.id,
+                    list_id=w.list_id,  # <- 必須加上
+                    word=w.word
+                ) for w in l.words]
+            )
+        )
+    return result
+# @router.get("/", response_model=List[VocabularyListOut])
+# def get_vocabulary_lists(
+#     current_user: User = Depends(get_current_user),
+#     db: Session = Depends(get_db)
+# ):
+#     if not current_user:
+#         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="請先登入")
+
+#     lists = db.query(VocabularyList).filter(VocabularyList.user_id == current_user.id).all()
+
+#     # 將每個 list 加上單字數量
+#     result = [
+#         VocabularyListOut(
+#             id=l.id,
+#             name=l.name,
+#             description=l.description,
+#             word_count=len(l.words)
+#         ) for l in lists
+#     ]
+#     return result
+
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
 def create_vocabulary_list(req: VocabularyListCreate,
