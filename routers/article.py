@@ -326,7 +326,7 @@ def get_markwords(
     article_id: int | None = Query(None),
     marked_from: datetime | None = Query(None),
     marked_to: datetime | None = Query(None),
-    limit: int = Query(50, ge=1, le=500),
+    limit: int | None = Query(None, ge=1),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -372,6 +372,15 @@ def upldate_markedword(
 
 
 
+
+@router.delete('/markedword/{id}')
+def delete_markedword(id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    item = db.query(MarkedWord).filter(MarkedWord.id == id, MarkedWord.user_id == current_user.id).first()
+    if not item:
+        raise HTTPException(status_code=404, detail="找不到標記單字")
+    db.delete(item)
+    db.commit()
+    return {"message": "成功刪除標記單字", "deleted_word": item.word}
 
 ## 只刪除查詢到的第一筆
 @router.delete('/markedword')
