@@ -2,7 +2,7 @@
 from fastapi import FastAPI
 from database import engine, Base, SessionLocal
 from models.models import User
-from routers import login , register , logout , profile, chains, words, article, VocabularyList, quiz
+from routers import login , register , logout , profile, chains, words, article, VocabularyList, quiz, translation
 from security import hash_password
 from config import setup_cors
 app = FastAPI()
@@ -73,3 +73,4 @@ app.include_router(words.router)
 app.include_router(article.router)
 app.include_router(VocabularyList.router)
 app.include_router(quiz.router)
+app.include_router(translation.router)

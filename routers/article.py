@@ -74,7 +74,8 @@ def get_articles(current_user: User = Depends(get_current_user), db: Session = D
             MarkedWordRes(
                 id=mw.id,
                 article_id=mw.article_id,
-                word=mw.word
+                word=mw.word,
+                translation=mw.translation
             )
             for mw in article.marked_words
         ]

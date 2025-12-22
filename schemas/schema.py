@@ -72,6 +72,7 @@ class MarkedWordRes(BaseModel):
     id: int
     article_id: int
     word: str
+    translation: Optional[str] = None
 
 
 class ArticleRes(BaseModel):

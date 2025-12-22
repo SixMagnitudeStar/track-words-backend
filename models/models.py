@@ -106,6 +106,7 @@ class MarkedWord(Base):
     ## article_id = Column(Integer, ForeignKey('articles.id')) 
     article_id = Column(Integer, ForeignKey('articles.id'), nullable=True)
     word = Column(String)                    # mark 的單字
+    translation = Column(String, nullable=True)
 
     marked_time = Column(DateTime, default=datetime.utcnow)
 
